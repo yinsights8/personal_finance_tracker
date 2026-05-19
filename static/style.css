@@ -1,0 +1,28 @@
+#body {
+    background-color: rgb(21, 20, 20);
+    color: rgb(255, 255, 255);
+    text-align: center;
+    margin: 0 auto;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.button-form-div,
+#button-form-div,
+#buttonforremovediv,
+#buttoncheckeditems {
+    display: none;
+    margin: 0 auto;
+}
+#buttonfordiv {
+    display: block;
+    margin: 0 auto;
+}
+#span {
+    display: flex;
+    justify-content: space-around;
+}
