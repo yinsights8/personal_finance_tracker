@@ -1,0 +1,21 @@
+[project]
+name = "expense-tracker"
+version = "0.1.0"
+description = "Personal expense tracker application"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic",
+    "werkzeug",
+    "python-dotenv",
+    "fastapi",
+    "flask",
+    "uvicorn[standard]",
+    "jinja2",
+    "python-multipart",
+    "python-jose[cryptography]",
+    "passlib[bcrypt]"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["test.py"]
