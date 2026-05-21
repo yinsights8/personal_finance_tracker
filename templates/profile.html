@@ -1,57 +1,111 @@
+{% block extra_css %}
+<link rel="stylesheet" href="/static/style_profile.css" />
+{% endblock %}
+
 {% block content %}
 <div id="mainpage" data-bs-theme="dark">
-<br>
+    <div class="profile-wrapper">
 
-<h4 class="text-white">{{ user.name }}</h4>
-<p class="text-secondary">{{ user.email }} — Member since {{ user.created_at[:10] }}</p>
+        <div class="profile-card">
+            <div class="profile-brand">Profile <span>Settings</span></div>
+            <div class="user-row">
+                <div class="avatar-circle">{{ user.name[:1] }}</div>
+                <div class="text-start">
+                    <div class="user-name">{{ user.name }}</div>
+                    <div class="user-email">{{ user.email }}</div>
+                    <div class="profile-small">Member since {{ user.created_at[:10] }}</div>
+                </div>
+            </div>
+        </div>
 
-<hr>
+        <div class="profile-card">
+            <div class="profile-section-title">Summary</div>
+            <div class="stats-flex">
+                <div class="stat-card">
+                    <div class="stat-value">₹{{ total_spent }}</div>
+                    <div class="stat-label">Total Spent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ transaction_count }}</div>
+                    <div class="stat-label">Transactions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ top_category }}</div>
+                    <div class="stat-label">Top Category</div>
+                </div>
+            </div>
+        </div>
 
-<div class="d-flex justify-content-around">
-    <div><span class="text-white fw-bold">₹{{ total_spent }}</span><br><small class="text-secondary">Total Spent</small></div>
-    <div><span class="text-white fw-bold">{{ transaction_count }}</span><br><small class="text-secondary">Transactions</small></div>
-    <div><span class="text-white fw-bold">{{ top_category }}</span><br><small class="text-secondary">Top Category</small></div>
-</div>
+        {% if recent_transactions %}
+        <div class="profile-card">
+            <div class="profile-section-title">Recent Transactions</div>
+            <div class="table-responsive">
+                <table class="table table-dark table-striped table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for txn in recent_transactions %}
+                        <tr>
+                            <td>{{ txn.date }}</td>
+                            <td>{{ txn.description or '—' }}</td>
+                            <td><span class="badge rounded-pill cat-badge cat-badge-{{ txn.category }}">{{ txn.category }}</span></td>
+                            <td class="text-end">₹{{ txn.amount }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
 
-<hr>
-
-{% if recent_transactions %}
-<h5 class="text-white">Recent Transactions</h5>
-<div class="table-responsive">
-    <table class="table table-dark table-striped table-hover">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th class="text-end">Amount</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for txn in recent_transactions %}
-            <tr>
-                <td>{{ txn.date }}</td>
-                <td>{{ txn.description or '—' }}</td>
-                <td>{{ txn.category }}</td>
-                <td class="text-end">₹{{ txn.amount }}</td>
-            </tr>
+        {% if category_totals %}
+        <div class="profile-card">
+            <div class="profile-section-title">Category Breakdown</div>
+            {% set max_cat = category_totals.values() | max %}
+            {% for cat, total in category_totals.items() %}
+            {% set pct = (total / max_cat * 100) | round %}
+            <div class="breakdown-row">
+                <div class="breakdown-label">
+                    <span class="badge rounded-pill cat-badge cat-badge-{{ cat }}">{{ cat }}</span>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="progress progress-sm" role="progressbar">
+                        <div class="progress-bar progress-bar-{{ cat.lower() }}" style="width: {{ pct }}%;"></div>
+                    </div>
+                </div>
+                <div class="breakdown-amount">₹{{ total }}</div>
+            </div>
             {% endfor %}
-        </tbody>
-    </table>
-</div>
-<hr>
-{% endif %}
+        </div>
+        {% endif %}
 
-{% if category_totals %}
-<h5 class="text-white">Category Breakdown</h5>
-{% set max_cat = category_totals.values() | max %}
-{% for cat, total in category_totals.items() %}
-{% set pct = (total / max_cat * 100) | round %}
-<div>{{ cat }} — ₹{{ total }}</div>
-{% endfor %}
-{% endif %}
+        <div class="profile-card">
+            <div class="profile-section-title">Change Password</div>
+            <div id="profile-error" class="msg-error d-none"></div>
+            <form action="/profile/change-password" method="post" id="change-password-form">
+                <input type="password" class="form-control profile-input" name="old_password" required placeholder="Current password" autocomplete="current-password">
+                <input type="password" class="form-control profile-input" name="new_password" id="new-password" required placeholder="New password" minlength="8" maxlength="72" autocomplete="new-password">
+                <div class="pw-section">
+                    <div id="pw-length" class="pw-req">8-72 characters</div>
+                    <div id="pw-letter" class="pw-req">At least one letter</div>
+                    <div id="pw-number" class="pw-req">At least one number</div>
+                    <div id="pw-special" class="pw-req">At least one special character (!@#$%^&amp;*...)</div>
+                </div>
+                <input type="password" class="form-control profile-input req-mt" name="confirm_password" required placeholder="Confirm new password" autocomplete="new-password">
+                <button type="submit" class="profile-btn">Update Password</button>
+            </form>
+        </div>
 
-<br>
+    </div>
 </div>
 {% endblock %}
-{% block scripts %}{% endblock %}
+
+{% block scripts %}
+<script src="/static/main_profile.js"></script>
+{% endblock %}

@@ -1,0 +1,211 @@
+body {
+    background-color: rgb(21, 20, 20);
+    color: rgb(255, 255, 255);
+}
+.profile-card {
+    background-color: var(--bg-card);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    margin-bottom: 1.5rem;
+}
+
+.profile-brand {
+    color: var(--text-primary);
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.profile-brand span {
+    color: var(--accent);
+}
+
+.profile-section-title {
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.profile-small {
+    font-size: 0.75rem;
+    color: var(--text-small);
+}
+
+.avatar-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background-color: var(--accent);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.stat-card {
+    background-color: var(--bg-input);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+}
+
+.stat-value {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.stat-label {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.cat-badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.cat-badge-Food { background-color: var(--food); }
+.cat-badge-Transport { background-color: var(--transport); }
+.cat-badge-Bills { background-color: var(--bills); }
+.cat-badge-Health { background-color: var(--health); }
+.cat-badge-Entertainment { background-color: var(--entertainment); }
+.cat-badge-Shopping { background-color: var(--shopping); }
+.cat-badge-Other { background-color: var(--other); }
+
+.progress-sm {
+    height: 10px;
+}
+
+.progress-bar-Food { background-color: var(--food); }
+.progress-bar-Transport { background-color: var(--transport); }
+.progress-bar-Bills { background-color: var(--bills); }
+.progress-bar-Health { background-color: var(--health); }
+.progress-bar-Entertainment { background-color: var(--entertainment); }
+.progress-bar-Shopping { background-color: var(--shopping); }
+.progress-bar-Other { background-color: var(--other); }
+
+.pw-req {
+    font-size: 0.75rem;
+    color: var(--text-small);
+    text-align: left;
+    margin-bottom: 0.25rem;
+}
+
+.pw-req.valid {
+    color: var(--success);
+    font-weight: bold;
+}
+
+.profile-input {
+    background-color: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-input) !important;
+    margin-bottom: 1rem;
+}
+
+.profile-input:focus {
+    background-color: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--accent) !important;
+}
+
+.profile-btn {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: var(--text-primary);
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.profile-btn:hover {
+    background-color: #5a6268;
+}
+
+.profile-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.user-row {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    justify-content: center;
+}
+
+.user-name {
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.user-email {
+    color: var(--text-muted);
+}
+
+.stats-flex {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.breakdown-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.breakdown-label {
+    width: 100px;
+    text-align: left;
+}
+
+.breakdown-amount {
+    width: 80px;
+    text-align: right;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.pw-section {
+    text-align: left;
+}
+
+.req-mt {
+    margin-top: 0.5rem;
+}
+
+.msg-success {
+    background-color: rgba(40, 167, 69, 0.2);
+    border: 1px solid var(--success);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    color: #d4edda;
+}
+
+.msg-error {
+    background-color: rgba(220, 53, 69, 0.2);
+    border: 1px solid #dc3545;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    color: #f8d7da;
+}
