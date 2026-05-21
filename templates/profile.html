@@ -34,6 +34,20 @@
                     <div class="stat-label">Top Category</div>
                 </div>
             </div>
+            <div class="stats-flex mt-2">
+                <div class="stat-card">
+                    <div class="stat-value">₹{{ avg_spent }}</div>
+                    <div class="stat-label">Avg per Entry</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">₹{{ max_spent }}</div>
+                    <div class="stat-label">Highest</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">₹{{ min_spent }}</div>
+                    <div class="stat-label">Lowest</div>
+                </div>
+            </div>
         </div>
 
         {% if recent_transactions %}
@@ -86,6 +100,20 @@
         {% endif %}
 
         <div class="profile-card">
+            <div class="profile-section-title">Spending by Category</div>
+            <div style="position:relative; height:300px;">
+                <canvas id="profileCategoryBarChart"></canvas>
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <div class="profile-section-title">Category Share</div>
+            <div style="position:relative; height:300px;">
+                <canvas id="profileCategoryPieChart"></canvas>
+            </div>
+        </div>
+
+        <div class="profile-card">
             <div class="profile-section-title">Change Password</div>
             <div id="profile-error" class="msg-error d-none"></div>
             <form action="/profile/change-password" method="post" id="change-password-form">
@@ -107,5 +135,84 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const CATEGORY_COLORS = {
+    "Food":          "#FF6384",
+    "Transport":     "#36A2EB",
+    "Bills":         "#FFCE56",
+    "Health":        "#4BC0C0",
+    "Movie tickets": "#9966FF",
+    "Shopping":      "#FF9F40",
+    "Other":         "#C9CBCF"
+};
+const CHART_DATA = {{ chart_data | tojson }};
+
+if (CHART_DATA.category_totals && Object.keys(CHART_DATA.category_totals).length > 0) {
+    var catLabels = Object.keys(CHART_DATA.category_totals);
+    var catValues = Object.values(CHART_DATA.category_totals);
+    var catColors = catLabels.map(function(l) { return CATEGORY_COLORS[l] || "#C9CBCF"; });
+
+    new Chart(document.getElementById("profileCategoryBarChart"), {
+        type: "bar",
+        data: {
+            labels: catLabels,
+            datasets: [{
+                label: "Total Spent",
+                data: catValues,
+                backgroundColor: catColors,
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) { return ' \u20B9' + ctx.parsed.x.toFixed(2); }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: { callback: function(v) { return '\u20B9' + v; } }
+                }
+            }
+        }
+    });
+
+    var pieTotal = catValues.reduce(function(a, b) { return a + b; }, 0);
+    new Chart(document.getElementById("profileCategoryPieChart"), {
+        type: "pie",
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: catValues,
+                backgroundColor: catColors,
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "right" },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            var pct = ((ctx.parsed / pieTotal) * 100).toFixed(1);
+                            return ' ' + ctx.label + ': \u20B9' + ctx.parsed.toFixed(2) + ' (' + pct + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
 <script src="/static/main_profile.js"></script>
 {% endblock %}
