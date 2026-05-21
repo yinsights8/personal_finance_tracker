@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, make_response, flash
+from flask import Flask, render_template, request, redirect, make_response, flash, jsonify
 from datetime import datetime, timedelta, timezone
 from Database.db import get_db, init_db, CATEGORIES
 from Database.auth import verify_password, create_token, decode_token, get_user_by_email, create_user, get_user_by_id
 from dotenv import load_dotenv
 import os
+import json
 
 load_dotenv()
 
@@ -126,12 +127,24 @@ def profile():
     )
     recent_transactions = [dict(row) for row in cursor.fetchall()]
 
+    cursor.execute(
+        "SELECT AVG(amount) as avg, MAX(amount) as max, MIN(amount) as min FROM expenses WHERE user_id = ?",
+        (user["id"],))
+    stats_row = cursor.fetchone()
+    avg_spent = round(stats_row["avg"] or 0, 2) if stats_row else 0
+    max_spent = round(stats_row["max"] or 0, 2) if stats_row else 0
+    min_spent = round(stats_row["min"] or 0, 2) if stats_row else 0
+
+    chart_data = {"category_totals": category_totals}
+
     conn.close()
 
     return render_template("profile.html", user=user, categories=CATEGORIES,
                            total_spent=total_spent, transaction_count=transaction_count,
                            top_category=top_category, category_totals=category_totals,
-                           recent_transactions=recent_transactions)
+                           recent_transactions=recent_transactions,
+                           avg_spent=avg_spent, max_spent=max_spent, min_spent=min_spent,
+                           chart_data=chart_data)
 
 
 @app.route("/dashboard")
@@ -151,9 +164,107 @@ def dashboard():
 
     total = sum(row[1] for row in data) if data else 0
 
+    category_totals = {}
+    weekly = []
+    monthly = []
+    yearly = []
+    stats = {"avg": 0, "max": 0, "min": 0, "total": 0}
+
+    if data:
+        cursor.execute(
+            "SELECT category, SUM(amount) as total FROM expenses WHERE user_id = ? GROUP BY category ORDER BY total DESC",
+            (user["id"],))
+        category_totals = {row["category"]: row["total"] for row in cursor.fetchall()}
+
+        cursor.execute(
+            "SELECT strftime('%Y-W%W', date) as period, SUM(amount) as total FROM expenses WHERE user_id = ? AND date >= date('now', '-56 days') GROUP BY period ORDER BY period ASC",
+            (user["id"],))
+        weekly = [{"period": r["period"], "total": r["total"]} for r in cursor.fetchall()]
+
+        cursor.execute(
+            "SELECT strftime('%Y-%m', date) as period, SUM(amount) as total FROM expenses WHERE user_id = ? AND date >= date('now', '-365 days') GROUP BY period ORDER BY period ASC",
+            (user["id"],))
+        monthly = [{"period": r["period"], "total": r["total"]} for r in cursor.fetchall()]
+
+        cursor.execute(
+            "SELECT strftime('%Y', date) as period, SUM(amount) as total FROM expenses WHERE user_id = ? GROUP BY period ORDER BY period ASC",
+            (user["id"],))
+        yearly = [{"period": r["period"], "total": r["total"]} for r in cursor.fetchall()]
+
+        cursor.execute(
+            "SELECT AVG(amount) as avg, MAX(amount) as max, MIN(amount) as min, SUM(amount) as total FROM expenses WHERE user_id = ?",
+            (user["id"],))
+        stats_row = cursor.fetchone()
+        stats = {"avg": round(stats_row["avg"] or 0, 2), "max": round(stats_row["max"] or 0, 2), "min": round(stats_row["min"] or 0, 2), "total": round(stats_row["total"] or 0, 2)}
+
+    chart_data = {
+        "category_totals": category_totals,
+        "weekly": weekly,
+        "monthly": monthly,
+        "yearly": yearly,
+        "stats": stats,
+    }
+
     conn.close()
 
-    return render_template("index.html", data=data, categories=CATEGORIES, total_expenses=total, month_year=month_year, user=user)
+    return render_template("index.html", data=data, categories=CATEGORIES, total_expenses=total, month_year=month_year, user=user, chart_data=chart_data, stats=stats)
+
+
+@app.route("/api/chart-data")
+@require_auth
+def api_chart_data():
+    user = get_current_user()
+    date_from = request.args.get("from", "")
+    date_to = request.args.get("to", "")
+    conn = get_db()
+    cursor = conn.cursor()
+
+    conditions = ["user_id = ?"]
+    params = [user["id"]]
+    if date_from:
+        conditions.append("date >= ?")
+        params.append(date_from)
+    if date_to:
+        conditions.append("date <= ?")
+        params.append(date_to)
+
+    where = " AND ".join(conditions)
+
+    cursor.execute(
+        f"SELECT category, SUM(amount) as total FROM expenses WHERE {where} GROUP BY category ORDER BY total DESC",
+        params)
+    category_totals = {row["category"]: row["total"] for row in cursor.fetchall()}
+
+    cursor.execute(
+        f"SELECT strftime('%Y-W%W', date) as period, SUM(amount) as total FROM expenses WHERE {where} AND date >= date('now', '-56 days') GROUP BY period ORDER BY period ASC",
+        params)
+    weekly = [{"period": r["period"], "total": r["total"]} for r in cursor.fetchall()]
+
+    cursor.execute(
+        f"SELECT strftime('%Y-%m', date) as period, SUM(amount) as total FROM expenses WHERE {where} AND date >= date('now', '-365 days') GROUP BY period ORDER BY period ASC",
+        params)
+    monthly = [{"period": r["period"], "total": r["total"]} for r in cursor.fetchall()]
+
+    cursor.execute(
+        f"SELECT strftime('%Y', date) as period, SUM(amount) as total FROM expenses WHERE {where} GROUP BY period ORDER BY period ASC",
+        params)
+    yearly = [{"period": r["period"], "total": r["total"]} for r in cursor.fetchall()]
+
+    cursor.execute(
+        f"SELECT AVG(amount) as avg, MAX(amount) as max, MIN(amount) as min, SUM(amount) as total FROM expenses WHERE {where}",
+        params)
+    row = cursor.fetchone()
+    stats = {"avg": round(row["avg"] or 0, 2), "max": round(row["max"] or 0, 2), "min": round(row["min"] or 0, 2), "total": round(row["total"] or 0, 2)}
+
+    conn.close()
+
+    return jsonify({
+        "category_totals": category_totals,
+        "weekly": weekly,
+        "monthly": monthly,
+        "yearly": yearly,
+        "stats": stats,
+    })
 
 
 @app.route("/add", methods=["POST"])
