@@ -1,219 +1,268 @@
-{% extends "index.html" %}
-{% block extra_css %}
-<link rel="stylesheet" href="/static/css/profile.css" />
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile — Expense Tracker</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css" />
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ"
+        crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="/static/css/profile.css" />
+</head>
+<body id="body" data-bs-theme="dark">
+    <div class="profile-outer">
+        <div class="profile-grid">
 
-{% block content %}
-<div id="mainpage" data-bs-theme="dark">
-    <div class="profile-wrapper">
-
-        <div class="profile-card">
-            <div class="profile-brand">Profile <span>Settings</span></div>
-            <div class="user-row">
-                <div class="avatar-circle">{{ user.name[:1] }}</div>
-                <div class="text-start">
-                    <div class="user-name">{{ user.name }}</div>
-                    <div class="user-email">{{ user.email }}</div>
-                    <div class="profile-small">Member since {{ user.created_at[:10] }}</div>
+            <aside class="profile-sidebar" aria-label="Profile navigation">
+                <div class="avatar-section">
+                    <div class="avatar-circle" aria-label="User avatar">{{ user.name[:1] }}</div>
+                    <div class="avatar-name">{{ user.name }}</div>
+                    <div class="avatar-email">{{ user.email }}</div>
+                    <button class="avatar-edit-btn" aria-label="Edit profile">Edit</button>
                 </div>
-            </div>
-        </div>
-
-        <div class="profile-card">
-            <div class="profile-section-title">Summary</div>
-            <div class="stats-flex">
-                <div class="stat-card">
-                    <div class="stat-value">₹{{ total_spent }}</div>
-                    <div class="stat-label">Total Spent</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">{{ transaction_count }}</div>
-                    <div class="stat-label">Transactions</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">{{ top_category }}</div>
-                    <div class="stat-label">Top Category</div>
-                </div>
-            </div>
-            <div class="stats-flex mt-2">
-                <div class="stat-card">
-                    <div class="stat-value">₹{{ avg_spent }}</div>
-                    <div class="stat-label">Avg per Entry</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">₹{{ max_spent }}</div>
-                    <div class="stat-label">Highest</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">₹{{ min_spent }}</div>
-                    <div class="stat-label">Lowest</div>
-                </div>
-            </div>
-        </div>
-
-        {% if recent_transactions %}
-        <div class="profile-card">
-            <div class="profile-section-title">Recent Transactions</div>
-            <div class="table-responsive">
-                <table class="table table-dark table-striped table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Description</th>
-                            <th>Category</th>
-                            <th class="text-end">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for txn in recent_transactions %}
-                        <tr>
-                            <td>{{ txn.date }}</td>
-                            <td>{{ txn.description or '—' }}</td>
-                            <td><span class="badge rounded-pill cat-badge cat-badge-{{ txn.category }}">{{ txn.category }}</span></td>
-                            <td class="text-end">₹{{ txn.amount }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        {% endif %}
-
-        {% if category_totals %}
-        <div class="profile-card">
-            <div class="profile-section-title">Category Breakdown</div>
-            {% set max_cat = category_totals.values() | max %}
-            {% for cat, total in category_totals.items() %}
-            {% set pct = (total / max_cat * 100) | round %}
-            <div class="breakdown-row">
-                <div class="breakdown-label">
-                    <span class="badge rounded-pill cat-badge cat-badge-{{ cat }}">{{ cat }}</span>
-                </div>
-                <div class="flex-grow-1">
-                    <div class="progress progress-sm" role="progressbar">
-                        <div class="progress-bar progress-bar-{{ cat.lower() }}" style="width: {{ pct }}%;"></div>
+                <div class="sidebar-divider"></div>
+                <div class="member-since">Member since {{ user.created_at[:10] }}</div>
+                <nav class="nav-links" aria-label="Profile navigation">
+                    <a class="nav-link-item" href="#account">Account settings</a>
+                    <div class="nav-dropdown">
+                        <button class="nav-link-item nav-dropdown-toggle" id="dashboard-settings-btn" aria-expanded="false">
+                            Dashboard settings
+                            <span class="dropdown-arrow">&#9660;</span>
+                        </button>
+                        <div class="nav-dropdown-menu" id="dashboard-settings-menu">
+                            <button class="nav-dropdown-item active" data-section="summary">Summary</button>
+                            <button class="nav-dropdown-item" data-section="recent-transactions">Recent Transactions</button>
+                            <button class="nav-dropdown-item" data-section="category-breakdown">Category Breakdown</button>
+                            <button class="nav-dropdown-item" data-section="spending-by-category">Spending by Category</button>
+                            <button class="nav-dropdown-item" data-section="category-share">Category Share</button>
+                        </div>
                     </div>
+                    <div class="nav-dropdown">
+                        <button class="nav-link-item nav-dropdown-toggle" id="privacy-btn" aria-expanded="false">
+                            Privacy
+                            <span class="dropdown-arrow">&#9660;</span>
+                        </button>
+                        <div class="nav-dropdown-menu" id="privacy-menu">
+                            <button class="nav-dropdown-item" data-section="change-password">Change Password</button>
+                        </div>
+                    </div>
+                </nav>
+            </aside>
+
+            <main class="profile-main">
+                <div class="cover-banner">
+                    <button class="cover-edit-btn" aria-label="Edit cover image">Edit</button>
                 </div>
-                <div class="breakdown-amount">₹{{ total }}</div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
+                <div class="content-panel">
 
-        <div class="profile-card">
-            <div class="profile-section-title">Spending by Category</div>
-            <div style="position:relative; height:300px;">
-                <canvas id="profileCategoryBarChart"></canvas>
-            </div>
-        </div>
+                    <div class="profile-card" id="section-summary">
+                        <div class="profile-section-title">Summary</div>
+                        <div class="stats-flex">
+                            <div class="stat-card">
+                                <div class="stat-value">₹{{ total_spent }}</div>
+                                <div class="stat-label">Total Spent</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">{{ transaction_count }}</div>
+                                <div class="stat-label">Transactions</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">{{ top_category }}</div>
+                                <div class="stat-label">Top Category</div>
+                            </div>
+                        </div>
+                        <div class="stats-flex mt-2">
+                            <div class="stat-card">
+                                <div class="stat-value">₹{{ avg_spent }}</div>
+                                <div class="stat-label">Avg per Entry</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">₹{{ max_spent }}</div>
+                                <div class="stat-label">Highest</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">₹{{ min_spent }}</div>
+                                <div class="stat-label">Lowest</div>
+                            </div>
+                        </div>
+                    </div>
 
-        <div class="profile-card">
-            <div class="profile-section-title">Category Share</div>
-            <div style="position:relative; height:300px;">
-                <canvas id="profileCategoryPieChart"></canvas>
-            </div>
-        </div>
+                    {% if recent_transactions %}
+                    <div class="profile-card" id="section-recent-transactions">
+                        <div class="profile-section-title">Recent Transactions</div>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Category</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for txn in recent_transactions %}
+                                    <tr>
+                                        <td>{{ txn.date }}</td>
+                                        <td>{{ txn.description or '—' }}</td>
+                                        <td><span class="badge rounded-pill cat-badge cat-badge-{{ txn.category }}">{{ txn.category }}</span></td>
+                                        <td class="text-end">₹{{ txn.amount }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
 
-        <div class="profile-card">
-            <div class="profile-section-title">Change Password</div>
-            <div id="profile-error" class="msg-error d-none"></div>
-            <form action="/profile/change-password" method="post" id="change-password-form">
-                <input type="password" class="form-control profile-input" name="old_password" required placeholder="Current password" autocomplete="current-password">
-                <input type="password" class="form-control profile-input" name="new_password" id="new-password" required placeholder="New password" minlength="8" maxlength="72" autocomplete="new-password">
-                <div class="pw-section">
-                    <div id="pw-length" class="pw-req">8-72 characters</div>
-                    <div id="pw-letter" class="pw-req">At least one letter</div>
-                    <div id="pw-number" class="pw-req">At least one number</div>
-                    <div id="pw-special" class="pw-req">At least one special character (!@#$%^&amp;*...)</div>
+                    {% if category_totals %}
+                    <div class="profile-card" id="section-category-breakdown">
+                        <div class="profile-section-title">Category Breakdown</div>
+                        {% set max_cat = category_totals.values() | max %}
+                        {% for cat, total in category_totals.items() %}
+                        {% set pct = (total / max_cat * 100) | round %}
+                        <div class="breakdown-row">
+                            <div class="breakdown-label">
+                                <span class="badge rounded-pill cat-badge cat-badge-{{ cat }}">{{ cat }}</span>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="progress progress-sm" role="progressbar">
+                                    <div class="progress-bar progress-bar-{{ cat.lower() }}" style="width: {{ pct }}%;"></div>
+                                </div>
+                            </div>
+                            <div class="breakdown-amount">₹{{ total }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="profile-card" id="section-spending-by-category">
+                        <div class="profile-section-title">Spending by Category</div>
+                        <div style="position:relative; height:300px;">
+                            <canvas id="profileCategoryBarChart" aria-label="Bar chart showing spending by category"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="profile-card" id="section-category-share">
+                        <div class="profile-section-title">Category Share</div>
+                        <div style="position:relative; height:300px;">
+                            <canvas id="profileCategoryPieChart" aria-label="Pie chart showing category share"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="profile-card" id="section-change-password">
+                        <div class="profile-section-title">Change Password</div>
+                        <div id="profile-error" class="msg-error d-none"></div>
+                        <div id="profile-success" class="msg-success d-none"></div>
+                        <form action="/profile/change-password" method="post" id="change-password-form">
+                            <input type="password" class="form-control profile-input" name="old_password" required placeholder="Current password" autocomplete="current-password" aria-label="Current password">
+                            <input type="password" class="form-control profile-input" name="new_password" id="new-password" required placeholder="New password" minlength="8" maxlength="72" autocomplete="new-password" aria-label="New password">
+                            <div class="pw-section">
+                                <div id="pw-length" class="pw-req">8-72 characters</div>
+                                <div id="pw-letter" class="pw-req">At least one letter</div>
+                                <div id="pw-number" class="pw-req">At least one number</div>
+                                <div id="pw-special" class="pw-req">At least one special character (!@#$%^&amp;*...)</div>
+                            </div>
+                            <input type="password" class="form-control profile-input req-mt" name="confirm_password" required placeholder="Confirm new password" autocomplete="new-password" aria-label="Confirm new password">
+                            <button type="submit" class="profile-btn">Update Password</button>
+                        </form>
+                    </div>
+
                 </div>
-                <input type="password" class="form-control profile-input req-mt" name="confirm_password" required placeholder="Confirm new password" autocomplete="new-password">
-                <button type="submit" class="profile-btn">Update Password</button>
-            </form>
-        </div>
+            </main>
 
+        </div>
     </div>
-</div>
-{% endblock %}
 
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-const CATEGORY_COLORS = {
-    "Food":          "#FF6384",
-    "Transport":     "#36A2EB",
-    "Bills":         "#FFCE56",
-    "Health":        "#4BC0C0",
-    "Movie tickets": "#9966FF",
-    "Shopping":      "#FF9F40",
-    "Other":         "#C9CBCF"
-};
-const CHART_DATA = {{ chart_data | tojson }};
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    const CATEGORY_COLORS = {
+        "Food":          "#FF6384",
+        "Transport":     "#36A2EB",
+        "Bills":         "#FFCE56",
+        "Health":        "#4BC0C0",
+        "Movie tickets": "#9966FF",
+        "Shopping":      "#FF9F40",
+        "Other":         "#C9CBCF"
+    };
+    const CHART_DATA = {{ chart_data | tojson }};
 
-if (CHART_DATA.category_totals && Object.keys(CHART_DATA.category_totals).length > 0) {
-    var catLabels = Object.keys(CHART_DATA.category_totals);
-    var catValues = Object.values(CHART_DATA.category_totals);
-    var catColors = catLabels.map(function(l) { return CATEGORY_COLORS[l] || "#C9CBCF"; });
+    if (CHART_DATA.category_totals && Object.keys(CHART_DATA.category_totals).length > 0) {
+        var catLabels = Object.keys(CHART_DATA.category_totals);
+        var catValues = Object.values(CHART_DATA.category_totals);
+        var catColors = catLabels.map(function(l) { return CATEGORY_COLORS[l] || "#C9CBCF"; });
 
-    new Chart(document.getElementById("profileCategoryBarChart"), {
-        type: "bar",
-        data: {
-            labels: catLabels,
-            datasets: [{
-                label: "Total Spent",
-                data: catValues,
-                backgroundColor: catColors,
-                borderRadius: 6,
-            }]
-        },
-        options: {
-            indexAxis: "y",
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(ctx) { return ' \u20B9' + ctx.parsed.x.toFixed(2); }
+        new Chart(document.getElementById("profileCategoryBarChart"), {
+            type: "bar",
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    label: "Total Spent",
+                    data: catValues,
+                    backgroundColor: catColors,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) { return ' \u20B9' + ctx.parsed.x.toFixed(2); }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { callback: function(v) { return '\u20B9' + v; } }
                     }
                 }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: { callback: function(v) { return '\u20B9' + v; } }
-                }
             }
-        }
-    });
+        });
 
-    var pieTotal = catValues.reduce(function(a, b) { return a + b; }, 0);
-    new Chart(document.getElementById("profileCategoryPieChart"), {
-        type: "pie",
-        data: {
-            labels: catLabels,
-            datasets: [{
-                data: catValues,
-                backgroundColor: catColors,
-                borderWidth: 2,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: "right" },
-                tooltip: {
-                    callbacks: {
-                        label: function(ctx) {
-                            var pct = ((ctx.parsed / pieTotal) * 100).toFixed(1);
-                            return ' ' + ctx.label + ': \u20B9' + ctx.parsed.toFixed(2) + ' (' + pct + '%)';
+        var pieTotal = catValues.reduce(function(a, b) { return a + b; }, 0);
+        new Chart(document.getElementById("profileCategoryPieChart"), {
+            type: "pie",
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    data: catValues,
+                    backgroundColor: catColors,
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: "right" },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                var pct = ((ctx.parsed / pieTotal) * 100).toFixed(1);
+                                return ' ' + ctx.label + ': \u20B9' + ctx.parsed.toFixed(2) + ' (' + pct + '%)';
+                            }
                         }
                     }
                 }
             }
-        }
-    });
-}
-</script>
-<script src="/static/js/profile.js"></script>
-{% endblock %}
+        });
+    }
+    </script>
+    <script src="/static/js/profile.js"></script>
+</body>
+</html>
