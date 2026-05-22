@@ -22,9 +22,20 @@ def init_db():
             name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
+            address TEXT DEFAULT '',
+            phone TEXT DEFAULT '',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)
+
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN address TEXT DEFAULT ''")
+    except Exception:
+        pass
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN phone TEXT DEFAULT ''")
+    except Exception:
+        pass
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS expenses (
@@ -54,8 +65,8 @@ def seed_db():
 
     from features.auth.service import hash_password
     cursor.execute(
-        "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
-        ("Demo User", "demo@spendly.com", hash_password("demo123"))
+        "INSERT INTO users (name, email, password_hash, address, phone) VALUES (?, ?, ?, ?, ?)",
+        ("Demo User", "demo@spendly.com", hash_password("demo123"), "123 Main St, City", "+1-555-0123")
     )
     user_id = cursor.lastrowid
 

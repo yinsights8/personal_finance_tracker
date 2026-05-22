@@ -67,7 +67,7 @@ def get_user_by_id(user_id: int) -> dict | None:
     from shared.db import get_db
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, email, created_at FROM users WHERE id = ?", (user_id,))
+    cursor.execute("SELECT id, name, email, address, phone, created_at FROM users WHERE id = ?", (user_id,))
     user = cursor.fetchone()
     conn.close()
     if user:
