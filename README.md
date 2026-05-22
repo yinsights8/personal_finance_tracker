@@ -21,7 +21,7 @@ cd personal_finance_tracker
 .venv\Scripts\activate
 
 # Start the development server
-python app.py
+python src/app.py
 ```
 
 The server runs on `http://0.0.0.0:5000`.
@@ -29,7 +29,7 @@ The server runs on `http://0.0.0.0:5000`.
 For a test/development server with seeded data:
 
 ```bash
-python test.py
+python tests/test_app.py
 ```
 
 ## Demo Account
@@ -78,17 +78,35 @@ Environment variables (`.env`):
 ## Project Structure
 
 ```
-├── app.py              # Flask application (production)
-├── test.py             # Flask application (development/testing)
-├── Database/
-│   ├── db.py           # Database connection, init, seeding
-│   ├── auth.py         # JWT tokens, password hashing, user CRUD
-│   └── config.py       # Configuration from environment
-├── Schemas/            # Pydantic models (unused by routes)
-├── templates/          # Jinja2 templates
-│   ├── landing.html    # Login / register page
-│   ├── index.html      # Dashboard with expense table & charts
-│   └── profile.html    # User profile page
-├── static/             # CSS and JS assets
-└── .env                # Environment configuration
+src/
+├── app.py                    # Flask app entry point (start here)
+├── features/
+│   ├── auth/
+│   │   ├── routes.py         # login, register, logout, landing
+│   │   └── service.py        # JWT tokens, password hashing, user CRUD
+│   ├── expenses/
+│   │   └── routes.py         # dashboard, add, remove, chart-data API
+│   └── profile/
+│       └── routes.py         # user profile page
+├── shared/
+│   ├── db.py                 # Database connection, init, seeding
+│   └── config.py             # Configuration from environment
+├── templates/
+│   ├── landing.html          # Login / register page
+│   ├── index.html            # Dashboard with expense table & charts
+│   └── profile.html          # User profile page
+└── static/
+    ├── css/
+    │   ├── dashboard.css
+    │   └── profile.css
+    └── js/
+        ├── dashboard.js
+        └── profile.js
+tests/
+├── test_app.py               # Development / test server
+docs/
+├── plans/                    # Planning documents
+├── implemented_plans/         # Completed plan records
+└── backup/
+    └── backup-plan.md
 ```

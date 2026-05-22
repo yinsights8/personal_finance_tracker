@@ -52,7 +52,7 @@ def decode_token(token: str) -> dict | None:
 
 
 def get_user_by_email(email: str) -> dict | None:
-    from Database.db import get_db
+    from shared.db import get_db
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
@@ -64,7 +64,7 @@ def get_user_by_email(email: str) -> dict | None:
 
 
 def get_user_by_id(user_id: int) -> dict | None:
-    from Database.db import get_db
+    from shared.db import get_db
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id, name, email, created_at FROM users WHERE id = ?", (user_id,))
@@ -76,7 +76,7 @@ def get_user_by_id(user_id: int) -> dict | None:
 
 
 def create_user(name: str, email: str, password: str) -> tuple[bool, str]:
-    from Database.db import get_db
+    from shared.db import get_db
 
     existing_user = get_user_by_email(email)
     if existing_user:
