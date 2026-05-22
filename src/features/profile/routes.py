@@ -89,3 +89,36 @@ def change_password():
     conn.close()
 
     return jsonify({"ok": True, "message": "Password updated successfully"})
+
+
+@profile_bp.route("/profile/update", methods=["POST"])
+@require_auth
+def update_profile():
+    user = get_current_user()
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip()
+    phone = request.form.get("phone", "").strip()
+    address = request.form.get("address", "").strip()
+
+    if not name:
+        return jsonify({"ok": False, "error": "Name is required"}), 400
+    if not email:
+        return jsonify({"ok": False, "error": "Email is required"}), 400
+    if len(name) < 2 or len(name) > 100:
+        return jsonify({"ok": False, "error": "Name must be 2-100 characters"}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE email = ? AND id != ?", (email, user["id"]))
+    if cursor.fetchone():
+        conn.close()
+        return jsonify({"ok": False, "error": "Email already in use"}), 400
+
+    cursor.execute(
+        "UPDATE users SET name = ?, email = ?, phone = ?, address = ? WHERE id = ?",
+        (name, email, phone, address, user["id"])
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"ok": True, "message": "Profile updated successfully"})

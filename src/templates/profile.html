@@ -28,7 +28,7 @@
                 <div class="sidebar-divider"></div>
                 <div class="member-since">Member since {{ user.created_at[:10] }}</div>
                 <nav class="nav-links" aria-label="Profile navigation">
-                    <a class="nav-link-item" href="#account">Account settings</a>
+                    <button class="nav-link-item nav-link-btn" id="account-settings-btn">Account settings</button>
                     <div class="nav-dropdown">
                         <button class="nav-link-item nav-dropdown-toggle" id="dashboard-settings-btn" aria-expanded="false">
                             Dashboard settings
@@ -51,11 +51,14 @@
                             <button class="nav-dropdown-item" data-section="change-password">Change Password</button>
                         </div>
                     </div>
+                    <div class="sidebar-divider"></div>
+                    <a class="nav-link-item close-profile-btn" href="/dashboard">Close profile</a>
                 </nav>
             </aside>
 
             <main class="profile-main">
                 <div class="cover-banner">
+                    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">&#9664;</button>
                     <button class="cover-edit-btn" aria-label="Edit cover image">Edit</button>
                 </div>
                 <div class="content-panel">
@@ -88,6 +91,54 @@
                             <div class="stat-card">
                                 <div class="stat-value">₹{{ min_spent }}</div>
                                 <div class="stat-label">Lowest</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-card" id="section-account-info">
+                        <div class="profile-section-title">
+                            Account Information
+                            <button class="account-edit-btn" id="account-edit-btn">Edit</button>
+                        </div>
+                        <div id="account-info-msg" class="msg-success d-none"></div>
+                        <div class="account-info-grid" id="account-info-display">
+                            <div class="account-info-item">
+                                <span class="account-info-label">Name</span>
+                                <span class="account-info-value" id="display-name">{{ user.name }}</span>
+                            </div>
+                            <div class="account-info-item">
+                                <span class="account-info-label">Email</span>
+                                <span class="account-info-value" id="display-email">{{ user.email }}</span>
+                            </div>
+                            <div class="account-info-item">
+                                <span class="account-info-label">Phone</span>
+                                <span class="account-info-value" id="display-phone">{{ user.phone or 'Not set' }}</span>
+                            </div>
+                            <div class="account-info-item">
+                                <span class="account-info-label">Address</span>
+                                <span class="account-info-value" id="display-address">{{ user.address or 'Not set' }}</span>
+                            </div>
+                        </div>
+                        <div class="account-info-grid d-none" id="account-info-edit">
+                            <div class="account-info-item">
+                                <span class="account-info-label">Name</span>
+                                <input class="account-info-input" id="edit-name" value="{{ user.name }}" />
+                            </div>
+                            <div class="account-info-item">
+                                <span class="account-info-label">Email</span>
+                                <input class="account-info-input" id="edit-email" value="{{ user.email }}" />
+                            </div>
+                            <div class="account-info-item">
+                                <span class="account-info-label">Phone</span>
+                                <input class="account-info-input" id="edit-phone" value="{{ user.phone or '' }}" placeholder="Not set" />
+                            </div>
+                            <div class="account-info-item">
+                                <span class="account-info-label">Address</span>
+                                <input class="account-info-input" id="edit-address" value="{{ user.address or '' }}" placeholder="Not set" />
+                            </div>
+                            <div class="account-info-actions">
+                                <button class="profile-btn account-save-btn" id="account-save-btn">Save</button>
+                                <button class="profile-btn account-cancel-btn" id="account-cancel-btn">Cancel</button>
                             </div>
                         </div>
                     </div>
