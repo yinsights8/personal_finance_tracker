@@ -1,9 +1,18 @@
+import sys
+import os
+
+# Ensure src/ is on the path so imports like "from shared.db" work
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_src_path = os.path.join(_project_root, "src")
+if _src_path not in sys.path:
+    sys.path.insert(0, _src_path)
+
 from flask import Flask, render_template, redirect, request, make_response, jsonify
 from datetime import datetime
 from typing import Optional
 
-from Database.db import init_db, seed_db, get_db, CATEGORIES
-from Database.auth import (
+from shared.db import init_db, seed_db, get_db, CATEGORIES
+from features.auth.service import (
     verify_password,
     create_token,
     decode_token,
@@ -16,9 +25,9 @@ from Database.auth import (
 STANDARD_EXPIRE = 86400
 REMEMBER_ME_EXPIRE = 604800
 
-
-
-app = Flask(__name__)
+app = Flask(__name__,
+    template_folder=os.path.join(_project_root, 'src', 'templates'),
+    static_folder=os.path.join(_project_root, 'src', 'static'))
 
 with app.app_context():
     init_db()
@@ -102,11 +111,18 @@ def dashboard():
     now = datetime.now()
     month_year = month or f"{now.year}-{now.month:02d}"
 
+    chart_data = {"category_totals": {}, "weekly": [], "monthly": [], "yearly": [],
+                  "stats": {"avg": 0, "max": 0, "min": 0, "total": total_expenses}}
+    stats = {"avg": 0, "max": 0, "min": 0, "total": total_expenses}
+
     return render_template("index.html",
         data=data,
         total_expenses=total_expenses,
         month_year=month_year,
         categories=CATEGORIES,
+        chart_data=chart_data,
+        stats=stats,
+        user=user,
     )
 
 

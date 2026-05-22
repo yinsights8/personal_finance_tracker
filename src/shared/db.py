@@ -1,7 +1,6 @@
 import sqlite3
 from datetime import datetime
-from werkzeug.security import generate_password_hash
-from Database.config import DATABASE_NAME
+from shared.config import DATABASE_NAME
 
 CATEGORIES = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"]
 
@@ -53,9 +52,10 @@ def seed_db():
         conn.close()
         return
 
+    from features.auth.service import hash_password
     cursor.execute(
         "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
-        ("Demo User", "demo@spendly.com", generate_password_hash("demo123"))
+        ("Demo User", "demo@spendly.com", hash_password("demo123"))
     )
     user_id = cursor.lastrowid
 
